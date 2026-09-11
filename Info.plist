@@ -9,6 +9,6 @@
   <key>NSPrincipalClass</key><string>NSApplication</string>
   <key>NSHighResolutionCapable</key><true/>
   <key>LSUIElement</key><true/>
-  <key>CFBundleShortVersionString</key><string>0.3.0</string>
-  <key>CFBundleVersion</key><string>3</string>
+  <key>CFBundleShortVersionString</key><string>0.3.1</string>
+  <key>CFBundleVersion</key><string>4</string>
 </dict></plist>

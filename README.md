@@ -2,19 +2,19 @@
 
 Your MacBook has the folding animation at home.
 
-A tiny menu bar app that holds your desktop at an apparent fixed angle and progressively blurs it as you move the lid. Pause, and it settles back into place. Your apps stay clickable and keep keyboard focus.
+A tiny menu bar app that holds your desktop at an apparent fixed angle and progressively blurs it as you close the lid below 90°. Open it above that angle and your desktop is untouched. Your apps stay clickable and keep keyboard focus. An alternative movement-based mode can settle the effect when you pause.
 
 ## Download and run
 
-**[Download Lid Plane for Apple silicon (DMG)](https://github.com/jh3y/lid-plane/releases/download/v0.3.0/LidPlane-0.3.0-arm64.dmg)** · [ZIP alternative](dist/LidPlane-0.3.0-arm64.zip?raw=true) · v0.3.0 · experimental
+**[Download Lid Plane for Apple silicon (DMG)](https://github.com/jh3y/lid-plane/releases/download/v0.3.1/LidPlane-0.3.1-arm64.dmg)** · [ZIP alternative](dist/LidPlane-0.3.1-arm64.zip?raw=true) · v0.3.1 · experimental
 
 You need macOS 13 or newer, an Apple silicon MacBook, and a readable lid angle sensor. Sensor support varies between models; Apple silicon alone does not guarantee compatibility. This is not an Intel or Windows download.
 
 1. Download and open the DMG above (or unzip the ZIP alternative).
 2. Drag **LidPlane.app** into **Applications**, eject the disk image, then open the installed app.
-3. Look for the **laptop icon in your menu bar**. There is no Dock icon or app window.
-4. Click the icon to enable the effect. Allow **Screen Recording** when macOS asks. If asked to quit and reopen, reopen the same app from Applications, then enable it again.
-5. Gently move your lid. Keep the laptop base and your head roughly still for the best illusion. Normal lid-close sleep still applies.
+3. Look for the **lid-angle readout in your menu bar**, such as `105°` (or a laptop icon if you have turned the readout off). There is no Dock icon or app window.
+4. Click the readout or icon to enable the effect. Allow **Screen Recording** when macOS asks. If asked to quit and reopen, reopen the same app from Applications, then enable it again.
+5. Gently close your lid below **90°** to see the default effect. Keep the laptop base and your head roughly still for the best illusion. Normal lid-close sleep still applies.
 
 No terminal, Xcode, or build step is needed for the download. The effect starts **off** each time you open the app.
 
@@ -26,15 +26,15 @@ This experimental build is **not notarized by Apple**. If you trust this downloa
 
 | Action | How |
 | --- | --- |
-| Turn the effect on/off | Click the menu bar icon, or press **Control–Command–L** |
-| Open options | Right-click or Control-click the icon |
+| Turn the effect on/off | Click the menu bar readout/icon, or press **Control–Command–L** |
+| Open options | Right-click or Control-click the readout/icon |
 | Enable only below a chosen lid angle | **Use Activation Angle**, then adjust **Activate at or below** (10–180°, in 1° steps) |
 | Ignore small hinge movements | **Jitter tolerance** slider (0–5°, in 0.5° steps; default 2°) |
 | Reset the starting angle | **Anchor Here** |
-| Settle back after you stop moving | **Auto-anchor When Still** (on by default) |
+| Settle back after you stop moving | Turn **Use Activation Angle** off, then use **Auto-anchor When Still** |
 | Change the settling delay | **Pause Before Anchoring** → 0.15, 0.3, 0.5, 1, or 2 seconds |
 | Blur without angle distortion | Keep **Progressive Blur** on; turn **Hold Content Angle** off |
-| More dramatic distortion | Turn **Perspective Taper** on |
+| Less dramatic distortion | Turn **Perspective Taper** off (on by default) |
 | See the sensor reading | **Show Lid Angle in Menu Bar** replaces the icon with a number like `105°` |
 | Test without moving the lid | Enable the effect, then choose **Simulate a Fold** |
 | Close the app completely | **Quit Lid Plane** |
@@ -45,7 +45,9 @@ Auto-anchor waits just **150 milliseconds** by default, then eases back over **2
 
 ### Angle mode and jitter tolerance
 
-**Use Activation Angle** is optional and off by default. Choose **90°**, for example: above 90° the desktop is untouched; at 90° the image is aligned, and closing further builds the effect. In this mode the selected angle is the fixed anchor, so **Anchor Here** and auto-anchor controls are disabled. Turn angle mode off to return to movement-based auto-anchor.
+**Use Activation Angle** defaults to **on at 90°**. Saved preferences take precedence, including an explicit choice to turn this mode off. Above 90° the desktop is untouched; at 90° the image is aligned, and closing further builds the effect. In this mode the selected angle is the fixed anchor, so **Anchor Here** and auto-anchor controls are disabled. Turn angle mode off to return to movement-based auto-anchor. The app itself still starts with the effect disabled until you toggle it on.
+
+Fresh installs also default to **2° jitter tolerance**, with **Progressive Blur**, **Hold Content Angle**, **Perspective Taper** and **Show Lid Angle in Menu Bar** all on. Updating does not overwrite existing saved choices. To match these defaults on an existing installation, select these options in the right-click menu.
 
 **Jitter tolerance** applies in either mode. At **2°**, movements within 2° of the last accepted reading are ignored; larger accumulated movement is accepted. Try **1°** for a lighter touch or **0°** for maximum sensitivity. This filters the hinge sensor, not whole-laptop motion: there is no accelerometer or head tracking. Above the activation angle the effect always hides, even if the filtered reading is still below it. Small movements just below the boundary can also be suppressed by the tolerance.
 
@@ -87,10 +89,10 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for build instructions, test/demo commands 
 Imagine a live picture of your desktop laid over your real desktop. When you move the lid, we reshape and blur that picture—not your actual apps.
 
 1. **ScreenCaptureKit supplies the picture.** Apple’s screen-capture framework gives us live frames of the built-in display. We leave our own overlay out of the capture so it does not turn into an endless hall of mirrors. Frames stay in memory; nothing is recorded to disk.
-2. **The lid angle sensor tells us how far you moved.** On supported MacBooks, we read the hinge angle through IOKit’s HID interface, roughly 30 times a second while enabled. We compare it with a saved starting angle. This sensor interface is undocumented, which is why support varies by model.
+2. **The lid angle sensor tells us how far you moved.** On supported MacBooks, we read the hinge angle through IOKit's HID interface, roughly 30 times a second while enabled. We compare it with the chosen activation angle, or a saved starting angle in movement mode. This sensor interface is undocumented, which is why support varies by model.
 3. **A Metal shader reshapes the picture.** A shader is a small program running on the GPU. Ours uses the angle difference to move the image’s pixels, creating the illusion that the content holds its angle while the physical display tilts around it. It is an approximation, not head tracking.
 4. **Progressive blur sells the effect.** Metal Performance Shaders makes several increasingly blurred copies of the frame. Our shader blends between them: more lid movement means more blur, and the top of the display gets more than the area near the hinge. The image’s outer boundary softens too, instead of ending in a hard cut.
-5. **When you stop, it settles.** Auto-anchor adopts the new lid angle and clears the effect. Once aligned, the overlay hides and you see the original desktop again. The overlay lets clicks through and never takes keyboard focus, so your real apps remain underneath, working normally.
+5. **When aligned, the overlay hides.** In the default angle mode, opening back to the chosen angle clears the effect. In movement mode, auto-anchor adopts the new lid angle when you stop moving. You then see the original desktop again. The overlay lets clicks through and never takes keyboard focus, so your real apps remain underneath, working normally.
 
 Built with Swift, ScreenCaptureKit, IOKit and Metal. An independent experiment, not affiliated with or endorsed by Apple.
 
