@@ -78,3 +78,9 @@ Imagine a live picture of your desktop laid over your real desktop. When you mov
 5. **When you stop, it settles.** Auto-anchor adopts the new lid angle and clears the effect. Once aligned, the overlay hides and you see the original desktop again. The overlay lets clicks through and never takes keyboard focus, so your real apps remain underneath, working normally.
 
 Built with Swift, ScreenCaptureKit, IOKit and Metal. An independent experiment, not affiliated with or endorsed by Apple.
+
+## License
+
+[MIT](LICENSE) · Copyright (c) 2026 Jhey.
+
+You can use, modify and redistribute this software, including commercially. Keep the copyright and license notice with copies or substantial portions. This license also covers the published v0.2.0 source and app downloads; its release includes a separate `LICENSE` asset.

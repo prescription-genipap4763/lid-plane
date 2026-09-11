@@ -26,10 +26,12 @@ Standalone macOS SwiftPM menu bar app. Work from this directory using SwiftPM. N
 
 ## Shipping and permissions
 
+- Preserve `Copyright (c) 2026 Jhey` and the full MIT license notice in copies or substantial portions of the software. Include `LICENSE` in source exports and app distributions; retain any applicable third-party notices too. This reminder adds no terms beyond `LICENSE` and does not require visible branding.
+
 - Read `README.md`, `DEVELOPMENT.md` and `DISTRIBUTION.md` before changing onboarding or packaging.
 - Only distributable ZIPs, `dist/SHA256SUMS.txt` and `dist/README.md` belong in Git. Exclude caches, loose bundles, screenshots and exported copies.
 - Keep binary versions, download links, signatures and checksums consistent.
 - Ad-hoc builds are experimental, not notarized. Never imply otherwise or advise disabling Gatekeeper.
 - Rebuilding can invalidate Screen Recording approval. Avoid unnecessarily rebuilding the working bundle; permission repair requires authorization and must target only `dev.jhey.lidplane`.
-- Do not create a public repo, choose a source license, upload a release, change permissions or install signing identities without authorization.
+- Do not create a public repo, change the source license, upload a release, change permissions or install signing identities without authorization.
 - Report what was actually verified. Local tests do not establish compatibility with every MacBook or Gatekeeper acceptance of a downloaded app.

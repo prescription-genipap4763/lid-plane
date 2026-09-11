@@ -19,7 +19,7 @@ fi
   shasum -a 256 -c SHA256SUMS.txt
 )
 mkdir -p "$DESTINATION/dist" "$DESTINATION/.codex/environments"
-for entry in Package.swift Info.plist Sources Tests script README.md DEVELOPMENT.md DISTRIBUTION.md AGENTS.md .gitignore; do
+for entry in Package.swift Info.plist Sources Tests script LICENSE README.md DEVELOPMENT.md DISTRIBUTION.md AGENTS.md .gitignore; do
   /usr/bin/ditto "$entry" "$DESTINATION/$entry"
 done
 cp .codex/environments/environment.toml "$DESTINATION/.codex/environments/"

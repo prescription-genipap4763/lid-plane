@@ -19,6 +19,8 @@ ARCHIVE="$RELEASE_DIR/LidPlane-$VERSION-$ARCH.zip"
 mkdir -p "$APP_BUNDLE/Contents/MacOS"
 cp "$BUILD_DIR/LidPlane" "$APP_BUNDLE/Contents/MacOS/LidPlane"
 cp Info.plist "$APP_BUNDLE/Contents/Info.plist"
+mkdir -p "$APP_BUNDLE/Contents/Resources"
+cp LICENSE "$APP_BUNDLE/Contents/Resources/LICENSE"
 if [ "$MODE" = --notarize ]; then
   /usr/bin/codesign --force --options runtime --timestamp --sign "$LIDPLANE_SIGN_IDENTITY" "$APP_BUNDLE"
 else
@@ -33,7 +35,7 @@ if [ "$MODE" = --notarize ]; then
   /usr/sbin/spctl --assess --type execute --verbose=2 "$APP_BUNDLE"
   /usr/bin/ditto -c -k --sequesterRsrc --keepParent "$APP_BUNDLE" "$ARCHIVE"
 fi
-tar --exclude='.DS_Store' -czf "$RELEASE_DIR/LidPlane-$VERSION-source.tar.gz" Package.swift Info.plist Sources Tests script README.md DEVELOPMENT.md DISTRIBUTION.md AGENTS.md .gitignore .codex/environments/environment.toml dist/README.md
+tar --exclude='.DS_Store' -czf "$RELEASE_DIR/LidPlane-$VERSION-source.tar.gz" Package.swift Info.plist Sources Tests script LICENSE README.md DEVELOPMENT.md DISTRIBUTION.md AGENTS.md .gitignore .codex/environments/environment.toml dist/README.md
 (
   cd "$RELEASE_DIR"
   shasum -a 256 "LidPlane-$VERSION-$ARCH.zip" "LidPlane-$VERSION-source.tar.gz" > SHA256SUMS.txt

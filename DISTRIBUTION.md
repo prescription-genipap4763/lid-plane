@@ -6,6 +6,8 @@ The current README download targets **v0.2.0 arm64 (Apple silicon)**. If you cha
 
 The experimental binary is ad-hoc signed, not notarized. Label it clearly as an experimental build in release notes. Gatekeeper may block downloaded copies; building from reviewed source is an alternative. Do not tell users to disable Gatekeeper. Each newly compiled ad-hoc build may need Screen Recording permission again.
 
+Lid Plane uses the MIT license, copyright (c) 2026 Jhey. Build and packaging scripts include `LICENSE` at `Contents/Resources/LICENSE` before signing, and source archives and standalone exports include it at the root. Preserve the full notice when redistributing. The original v0.2.0 ZIP and DMG are unchanged; their release provides the applicable license as a separate asset. Include that file when redistributing those original downloads.
+
 For a notarized release, install your **Developer ID Application** certificate with its private key and configure a `notarytool` keychain profile. Then run:
 
 ```sh
@@ -22,7 +24,7 @@ This signs with hardened runtime and a secure timestamp, submits the ZIP to Appl
 
 1. Run `./script/package_release.sh --experimental`.
 2. Run `./script/export_standalone.sh`. The clean project is in `dist/standalone/lid-plane/`.
-3. Choose a source license before advertising the project as open source; none has been chosen automatically.
+3. Include `LICENSE` with its copyright and permission notice intact.
 4. Create your new GitHub repository from the **contents of that exported folder**. Include its `dist` ZIP, checksum and README; do not upload unrelated files or build caches.
 5. Commit and push the project. Check that the README download link downloads the app ZIP, not a source archive.
 6. Test that GitHub download on another supported Mac, including Gatekeeper approval and Screen Recording permission.
@@ -33,7 +35,7 @@ Until step 5 happens, the files are only local and there is no public download. 
 
 Repository name: `lid-plane`. Version: `v0.2.0`. Attach the architecture-labelled app ZIP and `SHA256SUMS.txt` from the same build. GitHub supplies source archives once this project is committed; the locally prepared source archive is also standalone.
 
-Before publishing, choose a source license and add a short demonstration clip. Test the downloaded, quarantined app on another Mac; validation of a local bundle alone does not establish that Gatekeeper will accept it elsewhere. Verify both sensor support and screen capture on that Mac. No certificate is available in the development environment at the time these instructions were written, so only experimental packaging has been tested.
+Before publishing, verify that the license notice is included. Test the downloaded, quarantined app on another Mac; validation of a local bundle alone does not establish that Gatekeeper will accept it elsewhere. Verify both sensor support and screen capture on that Mac. No certificate is available in the development environment at the time these instructions were written, so only experimental packaging has been tested.
 
 Suggested release notes:
 
