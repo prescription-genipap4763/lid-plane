@@ -3,6 +3,7 @@
 dist/*
 !dist/README.md
 !dist/LidPlane-*.zip
+!dist/LidPlane-*.dmg
 !dist/SHA256SUMS.txt
 .swiftpm/
 .DS_Store

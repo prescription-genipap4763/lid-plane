@@ -11,7 +11,13 @@ final class OverlayPanel: NSPanel {
 }
 
 final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
-    private let sensor = LidSensor()
+    private var sensor = LidSensor()
+    private let environment = DisplayEnvironment()
+    private var safety = DisplaySafetyGate()
+    private var motion = LidMotionFilter()
+    private var stoppingCapture = false
+    private var lastSensorReconnect: TimeInterval = 0
+    private var demoAngle = 75.0
     private let preferences = UserDefaults.standard
     private var window: OverlayPanel!
     private var view: MTKView!
@@ -40,9 +46,12 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         get { preferences.bool(forKey: "autoAnchor") }
         set { preferences.set(newValue, forKey: "autoAnchor") }
     }
+    private var angleMode: Bool { preferences.bool(forKey: "angleMode") }
+    private var activationAngle: Double { min(180, max(10, preferences.double(forKey: "activationAngle"))) }
+    private var jitterTolerance: Double { min(5, max(0, preferences.double(forKey: "jitterTolerance"))) }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        preferences.register(defaults: ["autoAnchor": true, "anchorDelay": AutoAnchor.defaultDelay, "blur": true, "tilt": true, "perspective": false, "showHUD": false])
+        preferences.register(defaults: ["autoAnchor": true, "anchorDelay": AutoAnchor.defaultDelay, "blur": true, "tilt": true, "perspective": false, "showHUD": false, "angleMode": false, "activationAngle": 90.0, "jitterTolerance": 2.0])
         guard let gpu = MTLCreateSystemDefaultDevice() else { showError("Metal is unavailable on this Mac."); NSApp.terminate(nil); return }
         do { renderer = try PlaneRenderer(gpu: gpu) }
         catch { showError(error.localizedDescription); NSApp.terminate(nil); return }
@@ -94,6 +103,8 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         RunLoop.main.add(timer!, forMode: .common)
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(willSleep), name: NSWorkspace.willSleepNotification, object: nil)
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(didWake), name: NSWorkspace.didWakeNotification, object: nil)
+        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(willSleep), name: NSWorkspace.screensDidSleepNotification, object: nil)
+        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(didWake), name: NSWorkspace.screensDidWakeNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(displaysChanged), name: NSApplication.didChangeScreenParametersNotification, object: nil)
         NSLog("LidPlane menu bar ready; %@", sensor.diagnostic)
     }
@@ -119,6 +130,11 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         do { shortcut = try GlobalShortcut { shortcutCalls += 1 } }
         catch { logger.error("\(error.localizedDescription, privacy: .public)") }
         let shortcutEventResult = GlobalShortcut.dispatchTestEvent()
+        var sliderValue = 0.0
+        let sliderCheck = MenuSlider(title: "Jitter tolerance", value: 2, range: 0...5, step: 0.5) { sliderValue = $0 }
+        sliderCheck.slider.doubleValue = 1.1
+        sliderCheck.slider.sendAction(sliderCheck.slider.action, to: sliderCheck.slider.target)
+        let sliderPassed = sliderValue == 1 && sliderCheck.slider.doubleValue == 1
         renderer.delta = 0.6
         wantsOverlay = true
         window.alphaValue = 0
@@ -145,8 +161,8 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
                         try? png.write(to: Bundle.main.bundleURL.deletingLastPathComponent().appendingPathComponent("window-check.png"))
                     }
                 }
-                let passed = accepted && visiblePixels && onScreen && self.renderer.completedDraws > 20 && self.window.alphaValue == 1 && self.window.ignoresMouseEvents && !self.window.canBecomeKey && self.view.layer?.contentsScale == screen.backingScaleFactor && shortcutCalls == 1 && shortcutEventResult == 0
-                let report = "\(passed ? "PASS" : "FAIL"): pixelBuffer=\(accepted) visiblePixels=\(visiblePixels) onScreen=\(onScreen) scale=\(self.view.layer?.contentsScale ?? 0) drawable=\(self.view.drawableSize) attempts=\(self.renderer.attemptedDraws) missing=\(self.renderer.missingDrawables) completed=\(self.renderer.completedDraws) shortcutCalls=\(shortcutCalls) clickThrough=\(self.window.ignoresMouseEvents) canBecomeKey=\(self.window.canBecomeKey)\n"
+                let passed = accepted && visiblePixels && onScreen && sliderPassed && self.renderer.completedDraws > 20 && self.window.alphaValue == 1 && self.window.ignoresMouseEvents && !self.window.canBecomeKey && self.view.layer?.contentsScale == screen.backingScaleFactor && shortcutCalls == 1 && shortcutEventResult == 0
+                let report = "\(passed ? "PASS" : "FAIL"): pixelBuffer=\(accepted) visiblePixels=\(visiblePixels) onScreen=\(onScreen) slider=\(sliderPassed) scale=\(self.view.layer?.contentsScale ?? 0) drawable=\(self.view.drawableSize) attempts=\(self.renderer.attemptedDraws) missing=\(self.renderer.missingDrawables) completed=\(self.renderer.completedDraws) shortcutCalls=\(shortcutCalls) clickThrough=\(self.window.ignoresMouseEvents) canBecomeKey=\(self.window.canBecomeKey)\n"
                 try? report.write(to: Bundle.main.bundleURL.deletingLastPathComponent().appendingPathComponent("window-check.txt"), atomically: true, encoding: .utf8)
                 NSApp.terminate(nil)
             }
@@ -177,8 +193,20 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if shortcut != nil { toggle.keyEquivalent = "l"; toggle.keyEquivalentModifierMask = [.control, .command] }
         else { item("⌃⌘L shortcut unavailable", nil).isEnabled = false }
         menu.addItem(.separator())
-        item("Anchor Here", #selector(anchorHere)).isEnabled = enabled
-        item("Auto-anchor When Still", #selector(toggleAutoAnchor), checked: autoAnchor)
+        item("Use Activation Angle", #selector(toggleAngleMode), checked: angleMode)
+        let activation = NSMenuItem()
+        activation.view = MenuSlider(title: "Activate at or below", value: activationAngle, range: 10...180, step: 1, enabled: angleMode) { [weak self] value in
+            self?.preferences.set(value, forKey: "activationAngle"); self?.resetMotion()
+        }
+        menu.addItem(activation)
+        let jitter = NSMenuItem()
+        jitter.view = MenuSlider(title: "Jitter tolerance", value: jitterTolerance, range: 0...5, step: 0.5) { [weak self] value in
+            self?.preferences.set(value, forKey: "jitterTolerance"); self?.resetMotion()
+        }
+        menu.addItem(jitter)
+        menu.addItem(.separator())
+        item("Anchor Here", #selector(anchorHere)).isEnabled = enabled && !angleMode
+        item("Auto-anchor When Still", #selector(toggleAutoAnchor), checked: autoAnchor && !angleMode).isEnabled = !angleMode
         let delay = item("Pause Before Anchoring", nil)
         let submenu = NSMenu()
         for value in [AutoAnchor.defaultDelay, 0.3, 0.5, 1.0, 2.0] {
@@ -188,6 +216,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
             submenu.addItem(choice)
         }
         delay.submenu = submenu
+        delay.isEnabled = !angleMode
         menu.addItem(.separator())
         item("Progressive Blur", #selector(toggleBlur), checked: renderer.blur)
         item("Hold Content Angle", #selector(toggleTilt), checked: renderer.warp)
@@ -201,17 +230,14 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func toggleEnabled() {
         enabled.toggle()
-        if enabled { startCapture() } else { stopCapture(); status = "Off" }
+        safety.reset()
+        if enabled { anchorHere(); update() } else { stopCapture(); status = "Off" }
         refreshStatus()
     }
     private func startCapture() {
-        guard enabled, !suspended, capture == nil else { return }
-        guard let screen = NSScreen.screens.first(where: { screen in
-            guard let id = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID else { return false }
-            return CGDisplayIsBuiltin(id) != 0
-        }), let displayID = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID else {
-            enabled = false; status = "No built-in display"; refreshStatus(); return
-        }
+        guard enabled, !suspended, safety.state == .ready, capture == nil, !stoppingCapture,
+              let screen = DisplayEnvironment.usableBuiltInScreen(),
+              let displayID = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID else { return }
         fitOverlay(to: screen)
         capturedDisplay = displayID
         anchorHere()
@@ -241,12 +267,20 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func stopCapture() {
         let previous = capture
         capture = nil; starting = false; hasFrame = false; simulated = false
+        capturedDisplay = nil
         wantsOverlay = false
         window.orderOut(nil)
         renderer.delta = 0; renderer.useArtwork()
-        Task { await previous?.stop() }
+        if let previous {
+            stoppingCapture = true
+            Task { @MainActor in await previous.stop(); stoppingCapture = false }
+        }
     }
     private func captureFailed(_ error: Error) {
+        let now = CACurrentMediaTime()
+        if suspended || environment.lidClosed(now: now) == true || DisplayEnvironment.usableBuiltInScreen() == nil || (now - lastReading <= 1 && current <= 5) {
+            stopCapture(); safety.reset(); status = "Paused · display changing"; refreshStatus(); return
+        }
         let error = error as NSError
         stopCapture(); enabled = false; status = "Capture unavailable"; refreshStatus()
         let denied = error.domain == SCStreamErrorDomain && error.code == -3801
@@ -261,18 +295,39 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let now = CACurrentMediaTime()
         // The optional menu bar readout also works while the visual effect is off.
         let pollInterval = enabled ? 1.0/30 : 0.2
-        if !simulated, (enabled || preferences.bool(forKey: "showHUD")), now-lastAnglePoll >= pollInterval {
+        if (enabled || preferences.bool(forKey: "showHUD")), now-lastAnglePoll >= pollInterval {
             lastAnglePoll = now
             if let angle = sensor.read() { current = angle; lastReading = now }
+            else if enabled && now - lastSensorReconnect > 2 {
+                lastSensorReconnect = now; sensor = LidSensor()
+            }
         }
         guard enabled else { refreshStatus(); return }
         let dt = min(0.1, max(0, now-previousTick)); previousTick = now
-        if !simulated && now-lastReading > 1 {
-            status = "Sensor unavailable"; wantsOverlay = false; window.orderOut(nil); refreshStatus(); return
+        let freshSensor = now - lastReading <= 1
+        let screen = DisplayEnvironment.usableBuiltInScreen()
+        let closed = environment.lidClosed(now: now) == true || (freshSensor && current <= 5)
+        guard safety.update(lidClosed: closed, builtInAvailable: screen != nil, sensorAvailable: freshSensor || simulated, now: now) else {
+            if capture != nil || wantsOverlay { stopCapture() }
+            status = safety.state.rawValue; refreshStatus(); return
         }
+        if let capturedDisplay, let screen,
+           screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID != capturedDisplay {
+            stopCapture(); safety.reset(); return
+        }
+        if capture == nil { startCapture() }
+        let input = simulated ? demoAngle : current
+        guard AngleActivation.allows(angle: input, limit: activationAngle, enabled: angleMode) else {
+            motion.reset(to: activationAngle)
+            renderer.delta = 0; wantsOverlay = false; window.orderOut(nil)
+            status = "Armed · above \(Int(activationAngle))°"; refreshStatus(); return
+        }
+        let stableAngle = motion.update(input, tolerance: simulated ? 0 : jitterTolerance)
         anchor.delay = preferences.double(forKey: "anchorDelay")
-        anchor.update(angle: current, now: now, enabled: autoAnchor && !simulated)
-        let target = Float((anchor.reference-current) * .pi/180)
+        anchor.movementThreshold = max(0.1, jitterTolerance)
+        anchor.update(angle: stableAngle, now: now, enabled: autoAnchor && !angleMode && !simulated)
+        let reference = angleMode ? activationAngle : anchor.reference
+        let target = Float((reference-stableAngle) * .pi/180)
         renderer.delta += (target-renderer.delta) * Float(1-exp(-dt/0.08))
         status = starting ? "Starting…" : (simulated ? "Demo" : "On")
         // Show the real desktop when aligned, avoiding capture latency and reduced resolution.
@@ -306,6 +361,14 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func anchorHere() {
         if !simulated, let angle = sensor.read() { current = angle; lastReading = CACurrentMediaTime() }
         anchor.anchor(at: current, now: CACurrentMediaTime())
+        motion.reset(to: angleMode ? min(current, activationAngle) : current)
+    }
+    private func resetMotion() {
+        renderer.delta = 0; wantsOverlay = false; window.orderOut(nil)
+        anchorHere()
+    }
+    @objc private func toggleAngleMode() {
+        preferences.set(!angleMode, forKey: "angleMode"); resetMotion()
     }
     @objc private func toggleAutoAnchor() { autoAnchor.toggle() }
     @objc private func setDelay(_ sender: NSMenuItem) { preferences.set(sender.representedObject as? Double ?? AutoAnchor.defaultDelay, forKey: "anchorDelay") }
@@ -315,17 +378,15 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func toggleHUD() { preferences.set(!preferences.bool(forKey: "showHUD"), forKey: "showHUD"); refreshStatus() }
     @objc private func toggleSimulation() {
         simulated.toggle()
-        if simulated { current = max(10, anchor.reference-35) } else { anchorHere() }
+        if simulated { demoAngle = max(10, (angleMode ? activationAngle : anchor.reference)-35) } else { resetMotion() }
     }
     @objc private func openPermissions() { NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!) }
-    @objc private func willSleep() { suspended = true; stopCapture() }
-    @objc private func didWake() { suspended = false; if enabled { startCapture() } }
+    @objc private func willSleep() { suspended = true; safety.reset(); stopCapture(); status = "Paused · sleeping"; refreshStatus() }
+    @objc private func didWake() { suspended = false; safety.reset(); lastReading = 0; sensor = LidSensor(); if enabled { update() } }
     @objc private func displaysChanged() {
-        guard enabled, let capturedDisplay else { return }
-        guard let screen = NSScreen.screens.first(where: { ($0.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID) == capturedDisplay }) else {
-            stopCapture(); enabled = false; status = "Display disconnected"; refreshStatus(); return
-        }
-        fitOverlay(to: screen)
+        guard enabled else { return }
+        // Stop before AppKit can relocate a fullscreen panel onto an external screen.
+        stopCapture(); safety.reset(); status = "Waiting for built-in display…"; refreshStatus()
     }
     private func fitOverlay(to screen: NSScreen) {
         window.setFrame(screen.frame, display: false)

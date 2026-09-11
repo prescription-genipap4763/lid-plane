@@ -22,6 +22,9 @@ Standalone macOS SwiftPM menu bar app. Work from this directory using SwiftPM. N
 - Retain capture buffers until GPU work completes; exclude this app from capture.
 - Keep desktop frames in memory. No disk recording, networking, audio, camera, login service or broad input monitor without explicit authorization. Diagnostic PNGs must contain generated artwork only.
 - Preserve ordinary lid-close sleep and graceful sensor/capture failure handling.
+- Activation angle is an optional absolute ceiling, not movement from an anchor. Raw readings above it must always hide the effect. Angle mode uses a fixed threshold anchor; motion mode keeps auto-anchor.
+- Keep jitter tolerance separate. Compare against the last accepted reading so slow cumulative movement is not lost.
+- Closed, unavailable, asleep or mirrored built-in displays must pause capture, never redirect it to an external monitor. Wait for stable recovery and fresh sensor readings before restarting. Cancel pending capture discovery when stopping.
 - Register only the toggle hotkey. Report conflicts without adding Accessibility or Input Monitoring requirements.
 
 ## Shipping and permissions
@@ -29,7 +32,7 @@ Standalone macOS SwiftPM menu bar app. Work from this directory using SwiftPM. N
 - Preserve `Copyright (c) 2026 Jhey` and the full MIT license notice in copies or substantial portions of the software. Include `LICENSE` in source exports and app distributions; retain any applicable third-party notices too. This reminder adds no terms beyond `LICENSE` and does not require visible branding.
 
 - Read `README.md`, `DEVELOPMENT.md` and `DISTRIBUTION.md` before changing onboarding or packaging.
-- Only distributable ZIPs, `dist/SHA256SUMS.txt` and `dist/README.md` belong in Git. Exclude caches, loose bundles, screenshots and exported copies.
+- Only distributable ZIPs/DMGs, `dist/SHA256SUMS.txt` and `dist/README.md` belong in Git. Exclude caches, loose bundles, screenshots and exported copies.
 - Keep binary versions, download links, signatures and checksums consistent.
 - Ad-hoc builds are experimental, not notarized. Never imply otherwise or advise disabling Gatekeeper.
 - Rebuilding can invalidate Screen Recording approval. Avoid unnecessarily rebuilding the working bundle; permission repair requires authorization and must target only `dev.jhey.lidplane`.

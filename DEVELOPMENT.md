@@ -15,7 +15,7 @@ The script stops an existing Lid Plane when launching a replacement. `--build` o
 ## Checks and demo artwork
 
 ```sh
-swift run LidPlaneChecks                  # Five deterministic auto-anchor checks
+swift run LidPlaneChecks                  # Auto-anchor, activation, jitter and display-safety checks
 ./script/build_and_run.sh --probe         # Read-only sensor diagnostic
 ./script/build_and_run.sh --preview       # Generated artwork rendered into dist/*.png
 ./script/build_and_run.sh --window-check  # Briefly display artwork; check window pixels and hotkey dispatch
@@ -23,6 +23,8 @@ swift run LidPlaneChecks                  # Five deterministic auto-anchor check
 ```
 
 The window check covers hide/show, a CVPixelBuffer-backed frame, display scale, click-through and non-key-window configuration. It saves only its generated artwork window to `dist/window-check.png`, never your desktop, then exits. It does not physically move the hinge or replace a real desktop-capture test. The check executable does not require XCTest or full Xcode.
+
+It also exercises the native jitter slider's target/action and step rounding without changing saved preferences. `MotionPolicyTests` covers absolute 90° gating, jitter dead bands, cumulative motion, lid-close, external-only displays, lost sensors and interrupted recovery. Physical closed-lid operation with external monitors still needs testing on the target hardware.
 
 Diagnostic artwork lives in `Renderer.swift`; normal use captures the desktop, not that artwork. The preview command also runs `RenderChecks.swift`: a generated white rectangle verifies that blur crosses both warped side edges, softens inward, tightens near the hinge and respects blur-off. Successful GPU rendering alone does not prove the border is correct.
 
@@ -34,6 +36,9 @@ Diagnostic artwork lives in `Renderer.swift`; normal use captures the desktop, n
 - `Sources/LidPlane/Sensor.swift`: read-only, undocumented HID lid-angle report.
 - `Sources/LidPlane/GlobalShortcut.swift`: one system hotkey, Control–Command–L.
 - `Sources/LidPlaneCore/AutoAnchor.swift`: motion/debounce logic independent of UI.
+- `Sources/LidPlaneCore/MotionPolicy.swift`: jitter filter, absolute angle gate and safe display recovery.
+- `Sources/LidPlane/DisplayEnvironment.swift`: read-only clamshell state and built-in display eligibility.
+- `Sources/LidPlane/MenuSlider.swift`: accessible native controls inside the menu.
 - `Tests/LidPlaneCoreTests/`: standalone motion checks.
 
 ## Permissions after rebuilding
@@ -49,7 +54,7 @@ If needed, run `./script/repair_permissions.sh` **after the final build**. It qu
 ./script/export_standalone.sh
 ```
 
-The second command creates **`dist/standalone/lid-plane/`**, containing source, documentation, scripts, agent instructions, the Codex Run configuration, and the downloadable ZIP/checksum in its own `dist/` folder. It excludes build caches, temporary screenshots, loose app bundles and Git history.
+The second command creates **`dist/standalone/lid-plane/`**, containing source, documentation, scripts, agent instructions, the Codex Run configuration, and the downloadable ZIP, DMG and checksums in its own `dist/` folder. It excludes build caches, temporary screenshots, loose app bundles and Git history.
 
 The destination must not already exist; the script refuses to overwrite it. To export again, pass a new destination, such as `./script/export_standalone.sh /tmp/lid-plane-review-2`.
 

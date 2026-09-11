@@ -1,1 +1,2 @@
-64a1142c03cece24c1ff61acb2c68c9dcd59f640a6ba3aed31e2f3c6f58a5460  LidPlane-0.2.0-arm64.zip
+e66e338c2a0c552ef2c440f83a8c4a403f001ce7f65eee5c7f0f07df6d465c83  LidPlane-0.3.0-arm64.zip
+a0ed6d0831c7c8e4a78ed8919d55c8657fbccd12b121e391e4de55abde44a640  LidPlane-0.3.0-arm64.dmg

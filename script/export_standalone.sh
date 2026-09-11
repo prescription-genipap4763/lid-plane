@@ -10,7 +10,7 @@ if [ -e "$DESTINATION" ] || [ -L "$DESTINATION" ]; then
   echo "Destination already exists; choose a new folder: $DESTINATION" >&2
   exit 1
 fi
-if [ ! -f "dist/$ARCHIVE" ] || [ ! -f dist/SHA256SUMS.txt ]; then
+if [ ! -f "dist/$ARCHIVE" ] || [ ! -f "dist/LidPlane-$VERSION-$ARCH.dmg" ] || [ ! -f dist/SHA256SUMS.txt ]; then
   echo "Run ./script/package_release.sh --experimental first." >&2
   exit 1
 fi
@@ -23,6 +23,6 @@ for entry in Package.swift Info.plist Sources Tests script LICENSE README.md DEV
   /usr/bin/ditto "$entry" "$DESTINATION/$entry"
 done
 cp .codex/environments/environment.toml "$DESTINATION/.codex/environments/"
-cp dist/README.md "dist/$ARCHIVE" dist/SHA256SUMS.txt "$DESTINATION/dist/"
+cp dist/README.md "dist/$ARCHIVE" "dist/LidPlane-$VERSION-$ARCH.dmg" dist/SHA256SUMS.txt "$DESTINATION/dist/"
 echo "Standalone project: $DESTINATION"
 echo "Includes the app ZIP. No Git repository was created and nothing was published."

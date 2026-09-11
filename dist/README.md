@@ -1,13 +1,14 @@
 # Downloads and build output
 
-**[Download Lid Plane v0.2.0 for Apple silicon](LidPlane-0.2.0-arm64.zip?raw=true)**
+**[Download Lid Plane v0.3.0 for Apple silicon (DMG)](LidPlane-0.3.0-arm64.dmg?raw=true)** · [ZIP alternative](LidPlane-0.3.0-arm64.zip?raw=true)
 
-Unzip, move `LidPlane.app` into Applications, and open it. Follow the [main README](../README.md) for first-launch approval, Screen Recording permission and controls. This build is experimental and not notarized.
+Open the DMG, drag `LidPlane.app` into Applications, eject the image, and open the installed app. Or unzip the ZIP alternative. Follow the [main README](../README.md) for first-launch approval, Screen Recording permission and controls. This build is experimental and not notarized.
 
 ## Files worth sharing
 
-- `LidPlane-0.2.0-arm64.zip`: the complete app for Apple silicon MacBooks.
-- `SHA256SUMS.txt`: the ZIP’s integrity checksum, not Apple notarization or proof of publisher identity.
+- `LidPlane-0.3.0-arm64.dmg`: drag-to-Applications installer image.
+- `LidPlane-0.3.0-arm64.zip`: the same app in a ZIP.
+- `SHA256SUMS.txt`: integrity checksums for both v0.3.0 downloads, not Apple notarization or proof of publisher identity. Older release downloads remain available on GitHub.
 
 Optional integrity check, from a folder containing both files:
 
@@ -22,4 +23,4 @@ shasum -a 256 -c SHA256SUMS.txt
 - `standalone/lid-plane/`: a self-contained repository export.
 - `*.png` and `window-check.txt`: diagnostic artwork and reports.
 
-Those local outputs are ignored by Git. Only this README, downloadable app ZIPs and their checksum file belong in the repository. Share the ZIP rather than a loose `.app`: it preserves the bundle structure and executable permissions.
+Those local outputs are ignored by Git. Only this README, downloadable app ZIPs/DMGs and their checksum file belong in the repository. Share a package rather than a loose `.app`: it preserves the bundle structure and executable permissions.

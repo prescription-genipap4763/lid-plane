@@ -3,6 +3,7 @@ import ScreenCaptureKit
 
 final class DesktopCapture: NSObject, SCStreamOutput, SCStreamDelegate {
     private var stream: SCStream?
+    private var cancelled = false
     var onFrame: ((CVPixelBuffer) -> Void)?
     var onError: ((Error) -> Void)?
     private(set) var frames = 0
@@ -12,6 +13,8 @@ final class DesktopCapture: NSObject, SCStreamOutput, SCStreamDelegate {
         // The menu bar app's overlay is hidden at rest. Include offscreen windows
         // when discovering the app that must be excluded from the display stream.
         let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: false)
+        // A clamshell/display transition can cancel us while discovery is awaiting.
+        guard !cancelled else { throw CancellationError() }
         guard let display = content.displays.first(where: { $0.displayID == displayID }),
               let ownApp = content.applications.first(where: { $0.processID == ProcessInfo.processInfo.processIdentifier }) else {
             throw NSError(domain: "LidPlane", code: 1, userInfo: [NSLocalizedDescriptionKey: "Could not find this display or exclude the overlay from capture."])
@@ -34,11 +37,17 @@ final class DesktopCapture: NSObject, SCStreamOutput, SCStreamDelegate {
         try stream.addStreamOutput(self, type: .screen, sampleHandlerQueue: .main)
         self.stream = stream
         try await stream.startCapture()
+        if cancelled {
+            // stop() may have run while startCapture() was still in flight.
+            try? await stream.stopCapture()
+            throw CancellationError()
+        }
         NSLog("Desktop capture started, %d x %d; own app excluded", config.width, config.height)
     }
 
     @MainActor
     func stop() async {
+        cancelled = true
         let current = stream
         stream = nil
         try? await current?.stopCapture()

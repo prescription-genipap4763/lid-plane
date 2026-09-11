@@ -16,6 +16,7 @@ ARCH="$(uname -m)"
 RELEASE_DIR="$PROJECT_DIR/dist/release"
 APP_BUNDLE="$RELEASE_DIR/LidPlane.app"
 ARCHIVE="$RELEASE_DIR/LidPlane-$VERSION-$ARCH.zip"
+DISK_IMAGE="$RELEASE_DIR/LidPlane-$VERSION-$ARCH.dmg"
 mkdir -p "$APP_BUNDLE/Contents/MacOS"
 cp "$BUILD_DIR/LidPlane" "$APP_BUNDLE/Contents/MacOS/LidPlane"
 cp Info.plist "$APP_BUNDLE/Contents/Info.plist"
@@ -35,16 +36,23 @@ if [ "$MODE" = --notarize ]; then
   /usr/sbin/spctl --assess --type execute --verbose=2 "$APP_BUNDLE"
   /usr/bin/ditto -c -k --sequesterRsrc --keepParent "$APP_BUNDLE" "$ARCHIVE"
 fi
+./script/package_dmg.sh "$APP_BUNDLE" "$DISK_IMAGE"
+if [ "$MODE" = --notarize ]; then
+  /usr/bin/codesign --timestamp --sign "$LIDPLANE_SIGN_IDENTITY" "$DISK_IMAGE"
+  xcrun notarytool submit "$DISK_IMAGE" --keychain-profile "$LIDPLANE_NOTARY_PROFILE" --wait
+  xcrun stapler staple "$DISK_IMAGE"
+  xcrun stapler validate "$DISK_IMAGE"
+fi
 tar --exclude='.DS_Store' -czf "$RELEASE_DIR/LidPlane-$VERSION-source.tar.gz" Package.swift Info.plist Sources Tests script LICENSE README.md DEVELOPMENT.md DISTRIBUTION.md AGENTS.md .gitignore .codex/environments/environment.toml dist/README.md
 (
   cd "$RELEASE_DIR"
-  shasum -a 256 "LidPlane-$VERSION-$ARCH.zip" "LidPlane-$VERSION-source.tar.gz" > SHA256SUMS.txt
+  shasum -a 256 "LidPlane-$VERSION-$ARCH.zip" "LidPlane-$VERSION-$ARCH.dmg" "LidPlane-$VERSION-source.tar.gz" > SHA256SUMS.txt
 )
 # Publishable repo artifact; leave the user's approved dist/LidPlane.app untouched.
-cp "$ARCHIVE" "$PROJECT_DIR/dist/"
+cp "$ARCHIVE" "$DISK_IMAGE" "$PROJECT_DIR/dist/"
 (
   cd "$PROJECT_DIR/dist"
-  shasum -a 256 "LidPlane-$VERSION-$ARCH.zip" > SHA256SUMS.txt
+  shasum -a 256 "LidPlane-$VERSION-$ARCH.zip" "LidPlane-$VERSION-$ARCH.dmg" > SHA256SUMS.txt
 )
 echo "Packaged: $ARCHIVE"
 if [ "$MODE" = --experimental ]; then echo "EXPERIMENTAL: ad-hoc signed, not notarized. Gatekeeper may block downloaded copies."; fi

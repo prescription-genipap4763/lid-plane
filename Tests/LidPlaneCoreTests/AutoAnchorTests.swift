@@ -14,6 +14,7 @@ func XCTAssertEqual(_ actual: Double, _ expected: Double, accuracy: Double = 0.0
         checks.testSlowCumulativeMovementRestartsDebounce()
         checks.testSmallSensorJitterDoesNotPreventSettling()
         checks.testDisabledModeHoldsReferenceAndManualAnchorResets()
+        MotionPolicyTests.run()
         print("PASS: all five debounce, jitter, interruption and manual-anchor checks")
     }
     func testWaitsForPauseThenEasesToNewAngle() {
