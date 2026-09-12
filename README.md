@@ -2,6 +2,12 @@
 
 Your MacBook has the folding animation at home.
 
+
+
+https://github.com/user-attachments/assets/3282749f-58d8-47dc-b86a-408e50003e07
+
+
+
 A tiny menu bar app that holds your desktop at an apparent fixed angle and progressively blurs it as you close the lid below 90°. Open it above that angle and your desktop is untouched. Your apps stay clickable and keep keyboard focus. An alternative movement-based mode can settle the effect when you pause.
 
 ## Download and run
