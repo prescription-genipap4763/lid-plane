@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Jhey
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import AppKit
 import MetalKit
 import ScreenCaptureKit
@@ -51,7 +54,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var jitterTolerance: Double { min(5, max(0, preferences.double(forKey: "jitterTolerance"))) }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        preferences.register(defaults: ["autoAnchor": true, "anchorDelay": AutoAnchor.defaultDelay, "blur": true, "tilt": true, "perspective": true, "showHUD": true, "angleMode": true, "activationAngle": 90.0, "jitterTolerance": 2.0])
+        preferences.register(defaults: ["autoAnchor": true, "anchorDelay": AutoAnchor.defaultDelay, "blur": true, "tilt": true, "perspective": true, "showHUD": true, "angleMode": true, "activationAngle": EffectDefaults.activationAngle, "jitterTolerance": EffectDefaults.jitterTolerance])
         guard let gpu = MTLCreateSystemDefaultDevice() else { showError("Metal is unavailable on this Mac."); NSApp.terminate(nil); return }
         do { renderer = try PlaneRenderer(gpu: gpu) }
         catch { showError(error.localizedDescription); NSApp.terminate(nil); return }

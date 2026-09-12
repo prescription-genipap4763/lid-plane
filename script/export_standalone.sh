@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright (c) 2026 Jhey
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 set -euo pipefail
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$PROJECT_DIR"
@@ -19,7 +22,7 @@ fi
   shasum -a 256 -c SHA256SUMS.txt
 )
 mkdir -p "$DESTINATION/dist" "$DESTINATION/.codex/environments"
-for entry in Package.swift Info.plist Sources Tests script LICENSE README.md DEVELOPMENT.md DISTRIBUTION.md AGENTS.md .gitignore; do
+for entry in Package.swift Info.plist Sources Tests script LICENSE COPYRIGHT LICENSE-MIT README.md DEVELOPMENT.md DISTRIBUTION.md AGENTS.md .gitignore; do
   /usr/bin/ditto "$entry" "$DESTINATION/$entry"
 done
 cp .codex/environments/environment.toml "$DESTINATION/.codex/environments/"

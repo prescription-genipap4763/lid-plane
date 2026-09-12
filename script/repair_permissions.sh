@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright (c) 2026 Jhey
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 set -euo pipefail
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APP_BUNDLE="$PROJECT_DIR/dist/LidPlane.app"

@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Jhey
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import AppKit
 
 /// A small native slider inside the existing menu; no settings window or focus grab.

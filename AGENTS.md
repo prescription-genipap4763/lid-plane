@@ -23,13 +23,13 @@ Standalone macOS SwiftPM menu bar app. Work from this directory using SwiftPM. N
 - Keep desktop frames in memory. No disk recording, networking, audio, camera, login service or broad input monitor without explicit authorization. Diagnostic PNGs must contain generated artwork only.
 - Preserve ordinary lid-close sleep and graceful sensor/capture failure handling.
 - Activation angle is an optional absolute ceiling, not movement from an anchor. Raw readings above it must always hide the effect. Angle mode uses a fixed threshold anchor; motion mode keeps auto-anchor.
-- Keep jitter tolerance separate. Compare against the last accepted reading so slow cumulative movement is not lost.
+- Default to activation-angle mode at 110° and 0° jitter tolerance; preserve explicitly saved preferences. Keep jitter tolerance separate. Compare against the last accepted reading so slow cumulative movement is not lost.
 - Closed, unavailable, asleep or mirrored built-in displays must pause capture, never redirect it to an external monitor. Wait for stable recovery and fresh sensor readings before restarting. Cancel pending capture discovery when stopping.
 - Register only the toggle hotkey. Report conflicts without adding Accessibility or Input Monitoring requirements.
 
 ## Shipping and permissions
 
-- Preserve `Copyright (c) 2026 Jhey` and the full MIT license notice in copies or substantial portions of the software. Include `LICENSE` in source exports and app distributions; retain any applicable third-party notices too. This reminder adds no terms beyond `LICENSE` and does not require visible branding.
+- Preserve `Copyright (c) 2026 Jhey` and GPL-3.0-or-later notices. Bundle LICENSE and COPYRIGHT; include them and historical LICENSE-MIT in source exports. Publish matching Corresponding Source alongside GPL binaries. Do not relabel old MIT releases or imply those permissions were revoked. These instructions add no license terms.
 
 - Read `README.md`, `DEVELOPMENT.md` and `DISTRIBUTION.md` before changing onboarding or packaging.
 - Only distributable ZIPs/DMGs, `dist/SHA256SUMS.txt` and `dist/README.md` belong in Git. Exclude caches, loose bundles, screenshots and exported copies.

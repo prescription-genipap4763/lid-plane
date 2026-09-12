@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Jhey
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import Foundation
 
 /// A dead band measured from the last accepted angle, not the last raw sample.

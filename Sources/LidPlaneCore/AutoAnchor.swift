@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Jhey
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import Foundation
 
 /// Motion/debounce state independent of AppKit and the sensor, for deterministic tests.

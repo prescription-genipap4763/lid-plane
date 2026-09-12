@@ -24,7 +24,7 @@ swift run LidPlaneChecks                  # Auto-anchor, activation, jitter and 
 
 The window check covers hide/show, a CVPixelBuffer-backed frame, display scale, click-through and non-key-window configuration. It saves only its generated artwork window to `dist/window-check.png`, never your desktop, then exits. It does not physically move the hinge or replace a real desktop-capture test. The check executable does not require XCTest or full Xcode.
 
-It also exercises the native jitter slider's target/action and step rounding without changing saved preferences. `MotionPolicyTests` covers absolute 90° gating, jitter dead bands, cumulative motion, lid-close, external-only displays, lost sensors and interrupted recovery. Physical closed-lid operation with external monitors still needs testing on the target hardware.
+It also exercises the native jitter slider's target/action and step rounding without changing saved preferences. `MotionPolicyTests` covers 110°/0° defaults, absolute 90° and 110° gating, jitter dead bands, cumulative motion, lid-close, external-only displays, lost sensors and interrupted recovery. Physical closed-lid operation with external monitors still needs testing on the target hardware.
 
 Diagnostic artwork lives in `Renderer.swift`; normal use captures the desktop, not that artwork. The preview command also runs `RenderChecks.swift`: a generated white rectangle verifies that blur crosses both warped side edges, softens inward, tightens near the hinge and respects blur-off. Successful GPU rendering alone does not prove the border is correct.
 

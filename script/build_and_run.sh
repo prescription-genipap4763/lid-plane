@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright (c) 2026 Jhey
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 set -euo pipefail
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$PROJECT_DIR"
@@ -16,11 +19,11 @@ BUILD_DIR="$(swift build --show-bin-path)"
 APP_BUNDLE="$PROJECT_DIR/dist/LidPlane.app"
 mkdir -p "$APP_BUNDLE/Contents/MacOS"
 # Leave the approved bundle untouched when the executable and metadata match.
-if [ -n "${LIDPLANE_SIGN_IDENTITY:-}" ] || [ ! -x "$APP_BUNDLE/Contents/MacOS/LidPlane" ] || ! cmp -s "$BUILD_DIR/LidPlane" "$PROJECT_DIR/.build/bundled-input" || ! cmp -s Info.plist "$APP_BUNDLE/Contents/Info.plist" || ! cmp -s LICENSE "$APP_BUNDLE/Contents/Resources/LICENSE"; then
+if [ -n "${LIDPLANE_SIGN_IDENTITY:-}" ] || [ ! -x "$APP_BUNDLE/Contents/MacOS/LidPlane" ] || ! cmp -s "$BUILD_DIR/LidPlane" "$PROJECT_DIR/.build/bundled-input" || ! cmp -s Info.plist "$APP_BUNDLE/Contents/Info.plist" || ! cmp -s LICENSE "$APP_BUNDLE/Contents/Resources/LICENSE" || ! cmp -s COPYRIGHT "$APP_BUNDLE/Contents/Resources/COPYRIGHT"; then
   cp "$BUILD_DIR/LidPlane" "$APP_BUNDLE/Contents/MacOS/LidPlane"
   cp Info.plist "$APP_BUNDLE/Contents/Info.plist"
   mkdir -p "$APP_BUNDLE/Contents/Resources"
-  cp LICENSE "$APP_BUNDLE/Contents/Resources/LICENSE"
+  cp LICENSE COPYRIGHT "$APP_BUNDLE/Contents/Resources/"
   /usr/bin/codesign --force --sign "${LIDPLANE_SIGN_IDENTITY:--}" --identifier dev.jhey.lidplane "$APP_BUNDLE"
   cp "$BUILD_DIR/LidPlane" "$PROJECT_DIR/.build/bundled-input"
 fi

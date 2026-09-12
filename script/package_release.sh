@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright (c) 2026 Jhey
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 set -euo pipefail
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$PROJECT_DIR"
@@ -21,7 +24,7 @@ mkdir -p "$APP_BUNDLE/Contents/MacOS"
 cp "$BUILD_DIR/LidPlane" "$APP_BUNDLE/Contents/MacOS/LidPlane"
 cp Info.plist "$APP_BUNDLE/Contents/Info.plist"
 mkdir -p "$APP_BUNDLE/Contents/Resources"
-cp LICENSE "$APP_BUNDLE/Contents/Resources/LICENSE"
+cp LICENSE COPYRIGHT "$APP_BUNDLE/Contents/Resources/"
 if [ "$MODE" = --notarize ]; then
   /usr/bin/codesign --force --options runtime --timestamp --sign "$LIDPLANE_SIGN_IDENTITY" "$APP_BUNDLE"
 else
@@ -43,7 +46,7 @@ if [ "$MODE" = --notarize ]; then
   xcrun stapler staple "$DISK_IMAGE"
   xcrun stapler validate "$DISK_IMAGE"
 fi
-tar --exclude='.DS_Store' -czf "$RELEASE_DIR/LidPlane-$VERSION-source.tar.gz" Package.swift Info.plist Sources Tests script LICENSE README.md DEVELOPMENT.md DISTRIBUTION.md AGENTS.md .gitignore .codex/environments/environment.toml dist/README.md
+tar --exclude='.DS_Store' -czf "$RELEASE_DIR/LidPlane-$VERSION-source.tar.gz" Package.swift Info.plist Sources Tests script LICENSE COPYRIGHT LICENSE-MIT README.md DEVELOPMENT.md DISTRIBUTION.md AGENTS.md .gitignore .codex/environments/environment.toml dist/README.md
 (
   cd "$RELEASE_DIR"
   shasum -a 256 "LidPlane-$VERSION-$ARCH.zip" "LidPlane-$VERSION-$ARCH.dmg" "LidPlane-$VERSION-source.tar.gz" > SHA256SUMS.txt

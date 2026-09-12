@@ -1,8 +1,19 @@
+// Copyright (c) 2026 Jhey
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import Foundation
 import LidPlaneCore
 
 enum MotionPolicyTests {
     static func run() {
+        XCTAssertEqual(EffectDefaults.activationAngle, 110)
+        XCTAssertEqual(EffectDefaults.jitterTolerance, 0)
+        precondition(AngleActivation.allows(angle: 110, limit: EffectDefaults.activationAngle, enabled: true))
+        precondition(!AngleActivation.allows(angle: 110.01, limit: EffectDefaults.activationAngle, enabled: true))
+        var unfiltered = LidMotionFilter()
+        unfiltered.reset(to: 110)
+        XCTAssertEqual(unfiltered.update(109.9, tolerance: EffectDefaults.jitterTolerance), 109.9)
+        XCTAssertEqual(unfiltered.update(109.8, tolerance: EffectDefaults.jitterTolerance), 109.8)
         // Absolute threshold, including the exact limit and raw-angle cutoff.
         precondition(AngleActivation.allows(angle: 90, limit: 90, enabled: true))
         precondition(AngleActivation.allows(angle: 45, limit: 90, enabled: true))

@@ -8,11 +8,13 @@ https://github.com/user-attachments/assets/3282749f-58d8-47dc-b86a-408e50003e07
 
 
 
-A tiny menu bar app that holds your desktop at an apparent fixed angle and progressively blurs it as you close the lid below 90°. Open it above that angle and your desktop is untouched. Your apps stay clickable and keep keyboard focus. An alternative movement-based mode can settle the effect when you pause.
+A tiny menu bar app that holds your desktop at an apparent fixed angle and progressively blurs it as you close the lid below 110°. Open it above that angle and your desktop is untouched. Your apps stay clickable and keep keyboard focus. An alternative movement-based mode can settle the effect when you pause.
 
 ## Download and run
 
-**[Download Lid Plane for Apple silicon (DMG)](https://github.com/jh3y/lid-plane/releases/download/v0.3.1/LidPlane-0.3.1-arm64.dmg)** · [ZIP alternative](dist/LidPlane-0.3.1-arm64.zip?raw=true) · v0.3.1 · experimental
+**[Download Lid Plane for Apple silicon (DMG)](https://github.com/jh3y/lid-plane/releases/download/v0.3.2/LidPlane-0.3.2-arm64.dmg)** · [ZIP alternative](dist/LidPlane-0.3.2-arm64.zip?raw=true) · v0.3.2 · experimental
+
+[Corresponding source for v0.3.2](https://github.com/jh3y/lid-plane/releases/download/v0.3.2/LidPlane-0.3.2-source.tar.gz) · [Build instructions](DEVELOPMENT.md)
 
 You need macOS 13 or newer, an Apple silicon MacBook, and a readable lid angle sensor. Sensor support varies between models; Apple silicon alone does not guarantee compatibility. This is not an Intel or Windows download.
 
@@ -20,7 +22,7 @@ You need macOS 13 or newer, an Apple silicon MacBook, and a readable lid angle s
 2. Drag **LidPlane.app** into **Applications**, eject the disk image, then open the installed app.
 3. Look for the **lid-angle readout in your menu bar**, such as `105°` (or a laptop icon if you have turned the readout off). There is no Dock icon or app window.
 4. Click the readout or icon to enable the effect. Allow **Screen Recording** when macOS asks. If asked to quit and reopen, reopen the same app from Applications, then enable it again.
-5. Gently close your lid below **90°** to see the default effect. Keep the laptop base and your head roughly still for the best illusion. Normal lid-close sleep still applies.
+5. Gently close your lid below **110°** to see the default effect. Keep the laptop base and your head roughly still for the best illusion. Normal lid-close sleep still applies.
 
 No terminal, Xcode, or build step is needed for the download. The effect starts **off** each time you open the app.
 
@@ -35,7 +37,7 @@ This experimental build is **not notarized by Apple**. If you trust this downloa
 | Turn the effect on/off | Click the menu bar readout/icon, or press **Control–Command–L** |
 | Open options | Right-click or Control-click the readout/icon |
 | Enable only below a chosen lid angle | **Use Activation Angle**, then adjust **Activate at or below** (10–180°, in 1° steps) |
-| Ignore small hinge movements | **Jitter tolerance** slider (0–5°, in 0.5° steps; default 2°) |
+| Ignore small hinge movements | **Jitter tolerance** slider (0–5°, in 0.5° steps; default 0°) |
 | Reset the starting angle | **Anchor Here** |
 | Settle back after you stop moving | Turn **Use Activation Angle** off, then use **Auto-anchor When Still** |
 | Change the settling delay | **Pause Before Anchoring** → 0.15, 0.3, 0.5, 1, or 2 seconds |
@@ -51,11 +53,11 @@ Auto-anchor waits just **150 milliseconds** by default, then eases back over **2
 
 ### Angle mode and jitter tolerance
 
-**Use Activation Angle** defaults to **on at 90°**. Saved preferences take precedence, including an explicit choice to turn this mode off. Above 90° the desktop is untouched; at 90° the image is aligned, and closing further builds the effect. In this mode the selected angle is the fixed anchor, so **Anchor Here** and auto-anchor controls are disabled. Turn angle mode off to return to movement-based auto-anchor. The app itself still starts with the effect disabled until you toggle it on.
+**Use Activation Angle** defaults to **on at 110°**. Saved preferences take precedence, including an explicit choice to turn this mode off. Above 110° the desktop is untouched; at 110° the image is aligned, and closing further builds the effect. In this mode the selected angle is the fixed anchor, so **Anchor Here** and auto-anchor controls are disabled. Turn angle mode off to return to movement-based auto-anchor. The app itself still starts with the effect disabled until you toggle it on.
 
-Fresh installs also default to **2° jitter tolerance**, with **Progressive Blur**, **Hold Content Angle**, **Perspective Taper** and **Show Lid Angle in Menu Bar** all on. Updating does not overwrite existing saved choices. To match these defaults on an existing installation, select these options in the right-click menu.
+Fresh installs also default to **0° jitter tolerance**, with **Progressive Blur**, **Hold Content Angle**, **Perspective Taper** and **Show Lid Angle in Menu Bar** all on. Updating does not overwrite existing saved choices. To match these defaults on an existing installation, select these options in the right-click menu.
 
-**Jitter tolerance** applies in either mode. At **2°**, movements within 2° of the last accepted reading are ignored; larger accumulated movement is accepted. Try **1°** for a lighter touch or **0°** for maximum sensitivity. This filters the hinge sensor, not whole-laptop motion: there is no accelerometer or head tracking. Above the activation angle the effect always hides, even if the filtered reading is still below it. Small movements just below the boundary can also be suppressed by the tolerance.
+**Jitter tolerance** applies in either mode. The default **0°** accepts every sensor change; increase it if you want to ignore small shakes. At **2°**, movements within 2° of the last accepted reading are ignored; larger accumulated movement is accepted. Try **1°** for a lighter touch or **0°** for maximum sensitivity. This filters the hinge sensor, not whole-laptop motion: there is no accelerometer or head tracking. Above the activation angle the effect always hides, even if the filtered reading is still below it. Small movements just below the boundary can also be suppressed by the tolerance.
 
 ### Closed-lid and external-display safety
 
@@ -104,6 +106,8 @@ Built with Swift, ScreenCaptureKit, IOKit and Metal. An independent experiment, 
 
 ## License
 
-[MIT](LICENSE) · Copyright (c) 2026 Jhey.
+[GPLv3-or-later](LICENSE) (`GPL-3.0-or-later`) · Copyright (c) 2026 Jhey.
 
-You can use, modify and redistribute this software, including commercially. Keep the copyright and license notice with copies or substantial portions. This license also covers the published v0.2.0 source and app downloads; its release includes a separate `LICENSE` asset.
+Starting with **v0.3.2**, Lid Plane is licensed under GNU GPL version 3 or, at your option, any later version. Preserve the copyright and license notices, and follow the GPL requirements when distributing the app or modified versions, including providing Corresponding Source. Commercial distribution is permitted. See [COPYRIGHT](COPYRIGHT) and the full [license](LICENSE).
+
+**v0.3.1 and earlier remain MIT-licensed**, including their original source and downloads. The new license does not revoke those permissions. [LICENSE-MIT](LICENSE-MIT) preserves the historical notice; it does not license new changes under MIT.
