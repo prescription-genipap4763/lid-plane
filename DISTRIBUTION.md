@@ -2,7 +2,7 @@
 
 `./script/package_release.sh --experimental` builds an optimized app for the current Mac's architecture and produces an app ZIP, drag-to-Applications DMG, source archive, and SHA-256 checksums in `dist/release/`. It also copies the ZIP, DMG and their checksums to `dist/`, where Git can include them. It does not overwrite the everyday-use app at `dist/LidPlane.app`, and does not publish anything.
 
-The current README download targets **v0.3.2 arm64 (Apple silicon)**. If you change the version or target architecture, update the links in `README.md` and `dist/README.md` before packaging. Do not advertise an Intel build unless that build and sensor support have been tested.
+The current README download targets **v0.3.3 arm64 (Apple silicon)**. If you change the version or target architecture, update the links in `README.md` and `dist/README.md` before packaging. Do not advertise an Intel build unless that build and sensor support have been tested.
 
 The experimental binary is ad-hoc signed, not notarized. Label it clearly as an experimental build in release notes. Gatekeeper may block downloaded copies; building from reviewed source is an alternative. Do not tell users to disable Gatekeeper. Each newly compiled ad-hoc build may need Screen Recording permission again.
 
@@ -33,7 +33,7 @@ Until step 5 happens, the files are only local and there is no public download. 
 
 ### Attach a GitHub Release
 
-Repository name: `jh3y/lid-plane`. Version: `v0.3.2`. Tag the tested commit and attach the architecture-labelled app ZIP, DMG, `LidPlane-0.3.2-source.tar.gz` and `dist/release/SHA256SUMS.txt` from the same build. Publish the prepared Corresponding Source archive beside the binaries at no extra charge; it contains the source and scripts used to build them. Keep source available alongside every GPL binary download and link it clearly from the README. GitHub also supplies tag archives. Update source links when changing versions. Keep previous versioned downloads intact.
+Repository name: `jh3y/lid-plane`. Version: `v0.3.3`. Tag the tested commit and attach the architecture-labelled app ZIP, DMG, `LidPlane-0.3.3-source.tar.gz` and `dist/release/SHA256SUMS.txt` from the same build. Publish the prepared Corresponding Source archive beside the binaries at no extra charge; it contains the source and scripts used to build them. Keep source available alongside every GPL binary download and link it clearly from the README. GitHub also supplies tag archives. Update source links when changing versions. Keep previous versioned downloads intact.
 
 Before publishing, verify that the license notice is included. Test the downloaded, quarantined app on another Mac; validation of a local bundle alone does not establish that Gatekeeper will accept it elsewhere. Verify both sensor support and screen capture on that Mac. No certificate is available in the development environment at the time these instructions were written, so only experimental packaging has been tested.
 

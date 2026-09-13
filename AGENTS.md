@@ -17,6 +17,7 @@ Standalone macOS SwiftPM menu bar app. Work from this directory using SwiftPM. N
 - Start off, as a menu bar app, without stealing focus.
 - Keep the overlay click-through and non-key; normal input passes through.
 - Keep sensing on an independent timer while the overlay is hidden.
+- Keep the overlay at screen-saver level, above ordinary desktop UI including the Dock, menu bar and open menus. Do not try to bypass secure system surfaces. Start capture only for a visible effect; stop it above the activation angle or when aligned. Stream restarts must not reset the motion anchor.
 - Set the Metal layer's `contentsScale` to the display backing scale when sizing it. Zero scale produces invisible content even when GPU commands succeed. Keep the visible-pixel regression check.
 - Soften warped image coverage with the progressive blur; do not return a hard background colour outside UV bounds before blurring the boundary. Keep `RenderChecks` in the preview command: it verifies blur outside both side edges, tighter falloff near the hinge and blur-off behaviour.
 - Retain capture buffers until GPU work completes; exclude this app from capture.

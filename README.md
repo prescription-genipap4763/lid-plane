@@ -12,16 +12,16 @@ A tiny menu bar app that holds your desktop at an apparent fixed angle and progr
 
 ## Download and run
 
-**[Download Lid Plane for Apple silicon (DMG)](https://github.com/jh3y/lid-plane/releases/download/v0.3.2/LidPlane-0.3.2-arm64.dmg)** · [ZIP alternative](dist/LidPlane-0.3.2-arm64.zip?raw=true) · v0.3.2 · experimental
+**[Download Lid Plane for Apple silicon (DMG)](https://github.com/jh3y/lid-plane/releases/download/v0.3.3/LidPlane-0.3.3-arm64.dmg)** · [ZIP alternative](dist/LidPlane-0.3.3-arm64.zip?raw=true) · v0.3.3 · experimental
 
-[Corresponding source for v0.3.2](https://github.com/jh3y/lid-plane/releases/download/v0.3.2/LidPlane-0.3.2-source.tar.gz) · [Build instructions](DEVELOPMENT.md)
+[Corresponding source for v0.3.3](https://github.com/jh3y/lid-plane/releases/download/v0.3.3/LidPlane-0.3.3-source.tar.gz) · [Build instructions](DEVELOPMENT.md)
 
 You need macOS 13 or newer, an Apple silicon MacBook, and a readable lid angle sensor. Sensor support varies between models; Apple silicon alone does not guarantee compatibility. This is not an Intel or Windows download.
 
 1. Download and open the DMG above (or unzip the ZIP alternative).
 2. Drag **LidPlane.app** into **Applications**, eject the disk image, then open the installed app.
 3. Look for the **lid-angle readout in your menu bar**, such as `105°` (or a laptop icon if you have turned the readout off). There is no Dock icon or app window.
-4. Click the readout or icon to enable the effect. Allow **Screen Recording** when macOS asks. If asked to quit and reopen, reopen the same app from Applications, then enable it again.
+4. Click the readout or icon to enable the effect, then lower the lid below the activation angle to start capture. Allow **Screen Recording** when macOS asks. If asked to quit and reopen, reopen the same app from Applications, then enable it again.
 5. Gently close your lid below **110°** to see the default effect. Keep the laptop base and your head roughly still for the best illusion. Normal lid-close sleep still applies.
 
 No terminal, Xcode, or build step is needed for the download. The effect starts **off** each time you open the app.
@@ -94,7 +94,11 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for build instructions, test/demo commands 
 
 ## How it works (ELI5)
 
-Imagine a live picture of your desktop laid over your real desktop. When you move the lid, we reshape and blur that picture—not your actual apps.
+Imagine a live picture of your desktop laid over your real desktop. When you move the lid, we reshape and blur that picture—not your actual apps. The overlay sits above ordinary desktop UI, including the Dock, menu bar and open menus, so you see their transformed image instead of a second untransformed copy on top. Protected macOS surfaces and content may behave differently.
+
+Our own app is excluded from capture to avoid feedback, so its controls may disappear during the effect. Open the lid above the activation angle or press **Control–Command–L** to return to the real desktop. Clicks still pass through, but their targets are not warped; this effect is intended for watching, not precise interaction while folded.
+
+Capture only runs while a visible effect is needed. Above the activation angle or once the effect settles back to idle, the stream stops and shader drawing stops. The sensor keeps polling so movement can restart capture; there can be a short startup delay. Idle resource usage has not been benchmarked.
 
 1. **ScreenCaptureKit supplies the picture.** Apple’s screen-capture framework gives us live frames of the built-in display. We leave our own overlay out of the capture so it does not turn into an endless hall of mirrors. Frames stay in memory; nothing is recorded to disk.
 2. **The lid angle sensor tells us how far you moved.** On supported MacBooks, we read the hinge angle through IOKit's HID interface, roughly 30 times a second while enabled. We compare it with the chosen activation angle, or a saved starting angle in movement mode. This sensor interface is undocumented, which is why support varies by model.

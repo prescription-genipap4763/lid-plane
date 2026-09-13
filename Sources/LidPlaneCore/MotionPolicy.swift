@@ -24,6 +24,13 @@ public enum AngleActivation {
     }
 }
 
+/// Match the renderer's visibility threshold; aligned content needs no stream.
+public enum CaptureDemand {
+    public static func needsCapture(delta: Float, blur: Bool, warp: Bool) -> Bool {
+        delta.isFinite && abs(delta) > 0.002 && (blur || warp)
+    }
+}
+
 /// Fail closed, then wait for a stable display before restarting capture.
 /// No display IDs or UI objects here: topology transitions are deterministic tests.
 public struct DisplaySafetyGate {

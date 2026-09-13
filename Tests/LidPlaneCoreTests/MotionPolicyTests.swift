@@ -6,6 +6,13 @@ import LidPlaneCore
 
 enum MotionPolicyTests {
     static func run() {
+        precondition(!CaptureDemand.needsCapture(delta: 0, blur: true, warp: true))
+        precondition(!CaptureDemand.needsCapture(delta: 0.002, blur: true, warp: true))
+        precondition(CaptureDemand.needsCapture(delta: 0.01, blur: true, warp: false))
+        precondition(CaptureDemand.needsCapture(delta: -0.01, blur: false, warp: true))
+        precondition(!CaptureDemand.needsCapture(delta: 0.1, blur: false, warp: false))
+        precondition(!CaptureDemand.needsCapture(delta: .nan, blur: true, warp: true))
+        print("PASS: capture demand only while a visible effect is needed")
         XCTAssertEqual(EffectDefaults.activationAngle, 110)
         XCTAssertEqual(EffectDefaults.jitterTolerance, 0)
         precondition(AngleActivation.allows(angle: 110, limit: EffectDefaults.activationAngle, enabled: true))

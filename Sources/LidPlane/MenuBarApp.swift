@@ -69,7 +69,9 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         window.hasShadow = false
         window.isOpaque = false
         window.backgroundColor = .clear
-        window.level = .floating
+        // Present one transformed desktop above ordinary system UI, including
+        // the Dock, menu bar and open menus. This does not bypass secure surfaces.
+        window.level = .screenSaver
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .ignoresCycle]
         view = MTKView(frame: .zero, device: gpu)
         view.colorPixelFormat = .bgra8Unorm
@@ -243,7 +245,6 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
               let displayID = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID else { return }
         fitOverlay(to: screen)
         capturedDisplay = displayID
-        anchorHere()
         starting = true; status = "Starting…"
         let session = DesktopCapture()
         capture = session
@@ -267,9 +268,10 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
         }
     }
-    private func stopCapture() {
+    private func stopCapture(resetSimulation: Bool = true) {
         let previous = capture
-        capture = nil; starting = false; hasFrame = false; simulated = false
+        capture = nil; starting = false; hasFrame = false
+        if resetSimulation { simulated = false }
         capturedDisplay = nil
         wantsOverlay = false
         window.orderOut(nil)
@@ -318,9 +320,9 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
            screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID != capturedDisplay {
             stopCapture(); safety.reset(); return
         }
-        if capture == nil { startCapture() }
         let input = simulated ? demoAngle : current
         guard AngleActivation.allows(angle: input, limit: activationAngle, enabled: angleMode) else {
+            if capture != nil { stopCapture(resetSimulation: false) }
             motion.reset(to: activationAngle)
             renderer.delta = 0; wantsOverlay = false; window.orderOut(nil)
             status = "Armed · above \(Int(activationAngle))°"; refreshStatus(); return
@@ -332,6 +334,14 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let reference = angleMode ? activationAngle : anchor.reference
         let target = Float((reference-stableAngle) * .pi/180)
         renderer.delta += (target-renderer.delta) * Float(1-exp(-dt/0.08))
+        // No stream discovery, desktop frames or GPU draws while visually idle.
+        // Keep the motion anchor independent of stream restarts.
+        guard CaptureDemand.needsCapture(delta: renderer.delta, blur: renderer.blur, warp: renderer.warp) else {
+            if capture != nil { stopCapture(resetSimulation: false) }
+            wantsOverlay = false; window.orderOut(nil)
+            status = "Armed · idle"; refreshStatus(); return
+        }
+        if capture == nil { startCapture() }
         status = starting ? "Starting…" : (simulated ? "Demo" : "On")
         // Show the real desktop when aligned, avoiding capture latency and reduced resolution.
         // An independent timer keeps sensing the lid while the overlay is hidden.
